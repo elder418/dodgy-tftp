@@ -9,6 +9,7 @@ int main(int argc, char** argv)
 {
 	int sockfd, port;
 	struct sockaddr_in serv_addr;
+	char* buf = "old message huhuhu";
 	//open ipv4 udp socket
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0)
@@ -36,7 +37,10 @@ int main(int argc, char** argv)
 
 	std::cout << "successfully bound " << serv_addr.sin_addr.s_addr << ":" << serv_addr.sin_port << "\n";
 
-	//do memes
+	send(sockfd, "sending jefs", sizeof("sending jefs"), 0);
+	recv(sockfd, buf, sizeof(buf), 0);
+
+	std::cout << "MSG: " << buf << "\n";
 
 	close(sockfd);
 
