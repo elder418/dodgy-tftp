@@ -25,10 +25,12 @@ int main(int argc, char** argv)
 	serv_addr.sin_port = htons(port);
 
 	std::cout << serv_addr.sin_addr.s_addr << ":" << serv_addr.sin_port << "\n"; 
+	std::cout << sockfd << "\n";
 	
 	if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		std::cout << "failed to bind socket\n";
+		std::cout << errno;
 		return 1;
 	}
 
