@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 int main(int argc, char** argv)
 {
@@ -19,10 +20,12 @@ int main(int argc, char** argv)
 	port = 420;
 	serv_addr.sin_family = AF_INET;
 	//insert current host ip into addr struct
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_addr.s_addr = inet_addr("192.168.1.69");
 	//convert int to network byte order 
 	serv_addr.sin_port = htons(port);
 
+	std::cout << serv_addr.sin_addr.s_addr << ":" << serv_addr.sin_port << "\n"; 
+	
 	if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		std::cout << "failed to bind socket\n";
