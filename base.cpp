@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	std::cout << "successfully bound " << serv_addr.sin_addr.s_addr << ":" << serv_addr.sin_port << "\n";
 
 	sendto(sockfd, "sending jefs", sizeof("sending jefs"), 0, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-	recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&serv_addr, (unisnged int*)sizeof(serv_addr));
 
 	std::cout << "MSG: " << buf << "\n";
 
