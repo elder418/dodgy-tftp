@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	std::cout << "successfully bound " << serv_addr.sin_addr.s_addr << ":" << serv_addr.sin_port << "\n";
+	std::cout << "successfully bound " << inet_ntoa(serv_addr.sin_addr.s_addr) << ":" << ntoa(serv_addr.sin_port) << "\n";
 	
 	while (1)
 	{
