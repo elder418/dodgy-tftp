@@ -60,13 +60,16 @@ int main(int argc, char** argv)
 		}
 
 		std::cout << "received packet from: " << inet_ntoa(cli_addr.sin_addr) << ":" << ntohs(cli_addr.sin_port) << std::endl;
-		std::cout << "data: " << buf << std::endl;
 
-		if (sendto(sockfd, buf, recv_len, 0, (struct sockaddr*)&cli_addr, cli_size) < 0)
-		{
-			std::cout << "sendto failed\n";
-			std::cout << errno << "\n";
-		}
+		packet recv_pak;
+		recv_pak.decode(buf);
+		std::cout << recv_pak.get_opcode() << recv_pak.get_errno() << recv_pak.get_errmsg() << "\n";
+
+		//if (sendto(sockfd, buf, recv_len, 0, (struct sockaddr*)&cli_addr, cli_size) < 0)	
+		//{
+		//	std::cout << "sendto failed\n";
+		//	std::cout << errno << "\n";
+		//}
 	}
 
 	close(sockfd);

@@ -2,7 +2,7 @@ CLIOBJ=packet.cpp client.cpp
 SRVOBJ=packet.cpp server.cpp
 
 CC=g++
-CFLAGS=
+CFLAGS=-g
 LFLAGS=
 CLINAME=client
 SRVNAME=server

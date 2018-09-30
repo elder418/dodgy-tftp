@@ -3,12 +3,12 @@
 packet::packet()
 {
 	opcode = 0;
-	filename = NULL;
-	mode = NULL;
-	data = NULL;
+	filename = new char[24];
+	mode = new char[8];
+	data = new char[512];
 	blkno = 0;
 	errno = 0;
-	errmsg = NULL;
+	errmsg = new char[64];
 }
 packet::~packet()
 {	
@@ -19,6 +19,172 @@ packet::~packet()
 	blkno = 0;
 	errno = 0;
 	errmsg = NULL;
+}
+
+char* packet::encode()
+{
+	char* ret = new char[516];
+	switch (opcode)
+	{
+		case 0:	//empty packet
+			return NULL;
+			break; //pointless?
+		case 1: //RRQ
+		{
+			ret[0] = opcode & 0xff00;
+			ret[1] = opcode & 0x00ff;
+			int x = 2;
+			for (char* i = filename; *i; i++)
+			{
+				ret[x] = *i;
+				x++;
+			}
+			ret[x] = 0;
+			x++;
+			for (char* i = mode; *i; i++)
+			{
+				ret[x] = *i;
+				x++;
+			}
+			ret[x] = 0;
+			return ret;
+			break;
+		}
+		case 2: //WRQ
+		{
+			ret[0] = opcode & 0xff00;
+			ret[1] = opcode & 0x00ff;
+			int x = 2;
+			for (char* i = filename; *i; i++)
+			{
+				ret[x] = *i;
+				x++;
+			}
+			ret[x] = 0;
+			x++;
+			for (char* i = mode; *i; i++)
+			{
+				ret[x] = *i;
+				x++;
+			}
+			ret[x] = 0;
+			return ret;
+			break;
+		}
+		case 3: //DATA
+		{
+			ret[0] = opcode & 0xff00;
+			ret[1] = opcode & 0x00ff;
+			ret[2] = blkno & 0xff00;
+			ret[3] = blkno & 0x00ff;
+			int x = 4;
+			for (char* i = data; *i; i++)
+			{
+				ret[x] = *i;
+				x++;
+			}
+			return ret;
+			break;
+		}
+		case 4: //ACK
+		{
+			ret[0] = opcode & 0xff00;
+			ret[1] = opcode & 0x00ff;
+			ret[2] = blkno & 0xff00;
+			ret[3] = blkno & 0x00ff;
+			return ret;
+			break;
+		}
+		case 5: //ERROR
+		{
+			ret[0] = opcode & 0xff00;
+			ret[1] = opcode & 0x00ff;
+			ret[2] = errno & 0xff00;
+			ret[3] = errno & 0x00ff;
+			int x = 4;
+			for (char* i = errmsg; *i; i++)
+			{
+				ret[x] = *i;
+				x++;
+			}
+			ret[x] = 0;
+			return ret;
+			break;
+		}
+	}
+}
+void packet::decode(char* recv)
+{
+	int x = 0;
+	opcode = recv[0] | recv[1];
+	switch (opcode)
+	{
+		case 0:
+			break;
+		case 1: //RRQ
+		{
+			int i = 0;
+			char* fn;
+			x = 2;
+			while (recv[x] != 0)
+			{
+				filename[x-2] = recv[x];
+				x++;
+			}
+			x++; //skip null terminator
+			while (recv[x] != 0)
+			{
+				mode[i] = recv[x];
+				x++;
+				i++;
+			}
+			break;
+		}
+		case 2: //WRQ
+		{
+			int i = 0;
+			x = 2;
+			while (recv[x] != 0)
+			{
+				filename[x-2] = recv[x];
+				x++;
+			}
+			x++; //skip null terminator
+			while (recv[x] != 0)
+			{
+				mode[i] = recv[x];
+				x++;
+				i++;
+			}
+			break;
+		}
+		case 3: //DATA
+		{
+			blkno = recv[2] | recv[3];
+			x = 4;
+			while (recv[x] != 0)
+			{
+				data[x-4] = recv[x];
+				x++;
+			}
+			break;
+		}
+		case 4: //ACK
+		{
+			blkno = recv[2] | recv[3];
+			break;
+		}
+		case 5: //ERROR
+		{
+			errno = recv[2] | recv[3];
+			x = 4;
+			while (recv[x] != 0)
+			{
+				errmsg[x-4] = recv[x];
+				x++;
+			}
+		}
+	}
 }
 
 int16_t packet::get_opcode()
@@ -33,7 +199,7 @@ char* packet::get_mode()
 {
 	return mode;
 }
-void* packet::get_data()
+char* packet::get_data()
 {
 	return data;
 }
@@ -67,15 +233,10 @@ int packet::set_filename(char* fn)
 }
 int packet::set_mode(char* md)
 {
-	if (md == "octet")
-	{
-		mode = md;
-		return 0;
-	}
-	else
-		return 1;
+	mode = md;
+	return 0;
 }
-int packet::set_data(void* dat)
+int packet::set_data(char* dat)
 {
 	if (sizeof(dat) <= 512)
 	{

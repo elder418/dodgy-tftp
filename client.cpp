@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 	int sockfd, recv_len;
 	struct sockaddr_in cli_addr, serv_addr;
 	unsigned int serv_size = sizeof(serv_addr);
-	char buf[buf_len];
+	char* buf = new char[516];
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0)
@@ -32,13 +32,12 @@ int main(int argc, char** argv)
 	serv_addr.sin_port = htons(port);
 
 	packet rrq0;
-	rrq0.set_opcode(1);
-	rrq0.set_filename("testfile");
-	rrq0.set_mode("octet");
+	rrq0.set_opcode(5);
+	rrq0.set_errno(2);
+	rrq0.set_errmsg("big jefs");
+	buf = rrq0.encode();
 
-	strcpy(buf, "naman yef");
-
-	if (sendto(sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&serv_addr, serv_size) < 0)
+	if (sendto(sockfd, buf, buf_len, 0, (struct sockaddr*)&serv_addr, serv_size) < 0)
 	{
 		std::cout << "sendto failed\n";
 		std::cout << errno << "\n";
