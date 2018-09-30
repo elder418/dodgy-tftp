@@ -1,12 +1,18 @@
-OBJ=base.cpp
+CLIOBJ=packet.cpp client.cpp
+SRVOBJ=packet.cpp server.cpp
 
 CC=g++
 CFLAGS=
 LFLAGS=
-OBJNAME=test
+CLINAME=client
+SRVNAME=server
 
-all: $(OBJ)
-		$(CC) $(OBJ) $(CFLAGS) $(LFLAGS) -o $(OBJNAME)
-
+all: $(SRVOBJ) $(CLIOBJ)
+		$(CC) $(SRVOBJ) $(CFLAGS) $(LFLAGS) -o $(SRVNAME)
+		$(CC) $(CLIOBJ) $(CFLAGS) $(LFLAGS) -o $(CLINAME)
+client: $(CLIOBJ)
+		$(CC) $(CLIOBJ) $(CFLAGS) $(LFLAGS) -o $(CLINAME)
+server: $(SRVOBJ)
+		$(CC) $(SRVOBJ) $(CFLAGS) $(LFLAGS) -o $(SRVNAME)
 clean:
 		rm -r *.o
