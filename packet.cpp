@@ -13,12 +13,12 @@ packet::packet()
 packet::~packet()
 {	
 	opcode = 0;
-	filename = NULL;
-	mode = NULL;
-	data = NULL;
+	delete filename;
+	delete mode;
+	delete data;
 	blkno = 0;
 	errno = 0;
-	errmsg = NULL;
+	delete errmsg;
 }
 
 char* packet::encode()
