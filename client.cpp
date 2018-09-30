@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
 	packet rrq0, recv_pak;
 	rrq0.set_opcode(1);
-	rrq0.set_filename("testfile");
+	rrq0.set_filename("smallertest.txt");
 	rrq0.set_mode("octet");
 	send_buf = rrq0.encode();
 

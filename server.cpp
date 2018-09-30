@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -17,6 +18,7 @@ int main(int argc, char** argv)
 	//char buf[buf_len];
 	char* send_buf = new char[516];
 	char recv_buf[516];
+	std::ifstream r_file;
 	//open ipv4 udp socket
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0)
@@ -58,7 +60,6 @@ int main(int argc, char** argv)
 
 		recv_len = recvfrom(sockfd, recv_buf, buf_len, 0, (struct sockaddr*)&cli_addr, &cli_size);
 		if (recv_len < 0)
-		//if ((recv_len = recvfrom(sockfd, buf, sizeof(buf), 0, NULL, NULL)) < 0)
 		{
 			std::cout << "recvfrom failed\n";
 			std::cout << errno << "\n";
@@ -76,12 +77,28 @@ int main(int argc, char** argv)
 				break;
 			case 1: //RRQ
 			{
-				if (strcmp(recv_pak.get_filename(), "testfile") == 0) //see if req'd "file" exists
+				if (strcmp(recv_pak.get_filename(), "smallertest.txt") == 0) //see if req'd "file" exists
 				{	
-					//create data packet
-					send_pak.set_opcode(3);
-					send_pak.set_blkno(1);
-					send_pak.set_data("testdata");
+					std::streampos r_size;
+					char* r_mem;
+					//open file
+					r_file.open("smallertest.txt", std::ios::in | std::ios::ate | std::ios::binary);
+					r_size = r_file.tellg();
+					if (r_size > 512)
+					{
+						//BIG BLOCK SPLIT IT UP GEGYEGYEGYHUEUEHUE
+					}
+					else
+					{
+						r_mem = new char[r_size]; //CLEAN THIS UP SOMEWHERE D00d
+						r_file.seekg(0, std::ios::beg);
+						r_file.read(r_mem, r_size);
+						r_file.close();
+						//create data packet
+						send_pak.set_opcode(3);
+						send_pak.set_blkno(1);
+						send_pak.set_data(r_mem);
+					}
 					send_buf = send_pak.encode();
 				}
 				else
