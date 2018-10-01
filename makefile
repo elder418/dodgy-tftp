@@ -1,4 +1,4 @@
-CLIOBJ=pack.cpp client.cpp
+CLIOBJ=pack.cpp sock.cpp client.cpp
 SRVOBJ=pack.cpp sock.cpp server.cpp
 
 CC=g++

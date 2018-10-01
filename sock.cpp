@@ -12,6 +12,9 @@ sock::sock()
 	srv_addr.sin_family = AF_INET;
 	srv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	srv_addr.sin_port = htons(port);
+	cli_addr.sin_family = AF_INET;
+	cli_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	cli_addr.sin_port = htons(port);
 }
 sock::sock(const char* ip)
 {
@@ -25,6 +28,9 @@ sock::sock(const char* ip)
 	srv_addr.sin_family = AF_INET;
 	srv_addr.sin_addr.s_addr = inet_addr(ip);
 	srv_addr.sin_port = htons(port);	
+	cli_addr.sin_family = AF_INET;
+	cli_addr.sin_addr.s_addr = inet_addr(ip);
+	cli_addr.sin_port = htons(port);
 }
 
 sock::~sock()

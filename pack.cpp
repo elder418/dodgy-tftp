@@ -12,13 +12,17 @@ pack::pack()
 }
 pack::~pack()
 {	
-	opcode = 0;
-	delete filename;
-	delete mode;
-	delete data;
-	blkno = 0;
-	errno = 0;
-	delete errmsg;
+//	opcode = 0;
+//	if (filename != NULL)
+//		delete filename;
+//	if (mode != NULL)
+//		delete mode;
+//	if (data != NULL)
+//		delete data;
+//	blkno = 0;
+//	errno = 0;
+//	if (errmsg != NULL)
+//		delete errmsg;
 }
 
 char* pack::encode()
