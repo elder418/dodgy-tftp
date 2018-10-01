@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "packet.h"
+#include "pack.h"
 
 int main(int argc, char** argv)
 {
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	cli_addr.sin_addr.s_addr = inet_addr("192.168.1.69");
 	cli_addr.sin_port = htons(port);
 
-	packet rrq0, recv_pak;
+	pack rrq0, recv_pak;
 	rrq0.set_opcode(1);
 	rrq0.set_filename("smallertest.txt");
 	rrq0.set_mode("octet");
@@ -50,22 +50,44 @@ int main(int argc, char** argv)
 		std::cout << errno << "\n";
 	}
 
-	recv_len = recvfrom(sockfd, recv_buf, buf_len, 0, (struct sockaddr*)&cli_addr, &cli_size);
-	if (recv_len < 0)
+	while (1)
 	{
-		std::cout << "recvfrom failed\n";
-		std::cout << errno << "\n";
-		return 1;
+		recv_len = recvfrom(sockfd, recv_buf, buf_len, 0, (struct sockaddr*)&cli_addr, &cli_size);
+		if (recv_len < 0)
+		{
+			std::cout << "recvfrom failed\n";
+			std::cout << errno << "\n";
+			return 1;
+		}
+
+		std::cout << "received packet from: " << inet_ntoa(serv_addr.sin_addr) << ":" << ntohs(serv_addr.sin_port) << std::endl;
+
+		recv_pak.decode(recv_buf);
+
+		std::cout << recv_pak.get_opcode() << recv_pak.get_blkno() << recv_pak.get_data() << std::endl;
+
+		switch (recv_pak.get_opcode())
+		{
+			case 0: //invalid
+			{
+				std::cout << "invalid opcode\n";
+				break;
+			}
+			case 1: //RRQ
+				break;
+			case 2: //WRQ
+				break;
+			case 3: //DATA
+			{
+				if (sizeof(recv_pak.get_data()) < 512) //data packet not full, so last packet
+				{										// or first and only packet
+					//send ack
+					//write data to file
+				}
+			}
+		}
 	}
-
-	std::cout << "received packet from: " << inet_ntoa(serv_addr.sin_addr) << ":" << ntohs(serv_addr.sin_port) << std::endl;
-
-	recv_pak.decode(recv_buf);
-
-	std::cout << recv_pak.get_opcode() << recv_pak.get_blkno() << recv_pak.get_data() << std::endl;
-	std::cin.get();
-	std::cout << "sorry what";
-	close(sockfd);
+		close(sockfd);
 	
 	return 0;
 }

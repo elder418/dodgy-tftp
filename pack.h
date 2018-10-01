@@ -1,10 +1,12 @@
+#ifndef _pack_guard
+#define _pack_guard
 #include <string.h>
 #include <sys/types.h>
-class packet
+class pack
 {
 	public:
-		packet();
-		~packet();
+		pack();
+		~pack();
 
 		char* encode();
 		void decode(char*);
@@ -34,3 +36,4 @@ class packet
 		int16_t errno;
 		char* errmsg;
 };
+#endif

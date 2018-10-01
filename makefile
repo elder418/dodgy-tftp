@@ -1,5 +1,5 @@
-CLIOBJ=packet.cpp client.cpp
-SRVOBJ=packet.cpp server.cpp
+CLIOBJ=pack.cpp client.cpp
+SRVOBJ=pack.cpp sock.cpp server.cpp
 
 CC=g++
 CFLAGS=-g

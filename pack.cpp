@@ -1,6 +1,6 @@
-#include "packet.h"
+#include "pack.h"
 
-packet::packet()
+pack::pack()
 {
 	opcode = 0;
 	filename = new char[24];
@@ -10,7 +10,7 @@ packet::packet()
 	errno = 0;
 	errmsg = new char[64];
 }
-packet::~packet()
+pack::~pack()
 {	
 	opcode = 0;
 	delete filename;
@@ -21,7 +21,7 @@ packet::~packet()
 	delete errmsg;
 }
 
-char* packet::encode()
+char* pack::encode()
 {
 	char* ret = new char[516];
 	switch (opcode)
@@ -113,7 +113,7 @@ char* packet::encode()
 		}
 	}
 }
-void packet::decode(char* recv)
+void pack::decode(char* recv)
 {
 	int x = 0;
 	opcode = recv[0] | recv[1];
@@ -187,36 +187,36 @@ void packet::decode(char* recv)
 	}
 }
 
-int16_t packet::get_opcode()
+int16_t pack::get_opcode()
 {
 	return opcode;
 }
-char* packet::get_filename()
+char* pack::get_filename()
 {
 	return filename;
 }
-char* packet::get_mode()
+char* pack::get_mode()
 {
 	return mode;
 }
-char* packet::get_data()
+char* pack::get_data()
 {
 	return data;
 }
-int16_t packet::get_blkno()
+int16_t pack::get_blkno()
 {
 	return blkno;
 }
-int16_t packet::get_errno()
+int16_t pack::get_errno()
 {
 	return errno;
 }
-char* packet::get_errmsg()
+char* pack::get_errmsg()
 {
 	return errmsg;
 }
 
-int packet::set_opcode(int16_t op)
+int pack::set_opcode(int16_t op)
 {
 	if (op > 0 && op < 6)
 	{
@@ -226,17 +226,17 @@ int packet::set_opcode(int16_t op)
 	else
 		return 1;
 }
-int packet::set_filename(char* fn)
+int pack::set_filename(char* fn)
 {
 	filename = fn;
 	return 0;
 }
-int packet::set_mode(char* md)
+int pack::set_mode(char* md)
 {
 	mode = md;
 	return 0;
 }
-int packet::set_data(char* dat)
+int pack::set_data(char* dat)
 {
 	if (sizeof(dat) <= 512)
 	{
@@ -246,17 +246,17 @@ int packet::set_data(char* dat)
 	else //make new data packet here??
 		return 1;
 }
-int packet::set_blkno(int16_t bn)
+int pack::set_blkno(int16_t bn)
 {
 	blkno = bn;
 	return 0;
 }
-int packet::set_errno(int16_t en)
+int pack::set_errno(int16_t en)
 {
 	errno = en;
 	return 0;
 }
-int packet::set_errmsg(char* em)
+int pack::set_errmsg(char* em)
 {
 	errmsg = em;
 	return 0;
