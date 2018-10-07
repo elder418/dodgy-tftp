@@ -50,7 +50,12 @@ char* pack::encode()
 				ret[x] = *i;
 				x++;
 			}
-			ret[x] = 0;
+			//fill rest of memory with 0
+			while (x <= 516)
+			{
+				ret[x] = 0;
+				x++;
+			}
 			return ret;
 			break;
 		}
@@ -71,7 +76,12 @@ char* pack::encode()
 				ret[x] = *i;
 				x++;
 			}
-			ret[x] = 0;
+			//fill rest of memory with 0
+			while (x <= 516)
+			{
+				ret[x] = 0;
+				x++;
+			}
 			return ret;
 			break;
 		}
@@ -87,6 +97,12 @@ char* pack::encode()
 				ret[x] = *i;
 				x++;
 			}
+			//fill rest of memory with 0
+			while (x <= 516)
+			{
+				ret[x] = 0;
+				x++;
+			}
 			return ret;
 			break;
 		}
@@ -96,6 +112,13 @@ char* pack::encode()
 			ret[1] = opcode & 0x00ff;
 			ret[2] = blkno & 0xff00;
 			ret[3] = blkno & 0x00ff;
+			int x = 4;
+			//fill rest of memory with 0
+			while (x <= 516)
+			{
+				ret[x] = 0;
+				x++;
+			}
 			return ret;
 			break;
 		}
@@ -111,7 +134,12 @@ char* pack::encode()
 				ret[x] = *i;
 				x++;
 			}
-			ret[x] = 0;
+			//fill rest of memory with 0
+			while (x <= 516)
+			{
+				ret[x] = 0;
+				x++;
+			}
 			return ret;
 			break;
 		}
