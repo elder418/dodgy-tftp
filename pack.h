@@ -8,6 +8,8 @@ class pack
 		pack();
 		~pack();
 
+		void zero();
+
 		char* encode();
 		void decode(char*);
 
@@ -26,6 +28,12 @@ class pack
 		int set_blkno(int16_t);
 		int set_errno(int16_t);
 		int set_errmsg(char*);
+
+		void mk_RRQ(char* fn, char* mde);
+		void mk_WRQ(char* fn, char* mde);
+		void mk_DATA(int16_t blk, char* dat);
+		void mk_ACK(int16_t blk);
+		void mk_ERROR(int16_t en, char* em);
 
 	private:
 		int16_t opcode;

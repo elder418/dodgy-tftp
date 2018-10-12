@@ -25,6 +25,21 @@ pack::~pack()
 //		delete errmsg;
 }
 
+void pack::zero()
+{
+	opcode = 0;
+	filename = new char[24];
+	memset(&filename, 0, 24);
+	mode = new char[8];
+	memset(&mode, 0, 8);
+	data = new char[512];
+	memset(&data, 0, 512);
+	blkno = 0;
+	errno = 0;
+	errmsg = new char[64];
+	memset(&errmsg, 0, 64);
+}
+
 char* pack::encode()
 {
 	char* ret = new char[516];
@@ -143,6 +158,9 @@ char* pack::encode()
 			return ret;
 			break;
 		}
+		default:
+			return NULL;
+			break;
 	}
 }
 void pack::decode(char* recv)
@@ -292,4 +310,38 @@ int pack::set_errmsg(char* em)
 {
 	errmsg = em;
 	return 0;
+}
+
+void pack::mk_RRQ(char* fn, char* mde)
+{
+	this->set_opcode(1);
+	this->set_filename(fn);
+	this->set_mode(mde);
+}
+
+void pack::mk_WRQ(char* fn, char* mde)
+{
+	this->set_opcode(2);
+	this->set_filename(fn);
+	this->set_mode(mde);
+}
+
+void pack::mk_DATA(int16_t blk, char* dat)
+{
+	this->set_opcode(3);
+	this->set_blkno(blk);
+	this->set_data(dat);
+}
+
+void pack::mk_ACK(int16_t blk)
+{
+	this->set_opcode(4);
+	this->set_blkno(blk);
+}
+
+void pack::mk_ERROR(int16_t en, char* em)
+{
+	this->set_opcode(5);
+	this->set_errno(en);
+	this->set_errmsg(em);
 }

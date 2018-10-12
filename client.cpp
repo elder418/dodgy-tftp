@@ -23,10 +23,9 @@ int main(int argc, char** argv)
 	sock cli_sock("192.168.1.69");
 
 	pack rrq0, get_pack, put_pack;
-	rrq0.set_opcode(1);
-	rrq0.set_filename("smallertest.txt");
-	rrq0.set_mode("octet");
+	rrq0.mk_RRQ("smalltest.txt", "octet");
 
+	w_file.open("out-client/smalltest.txt", std::ios::out | std::ios::app);
 	//send file request
 	cli_sock.set_send_pack(rrq0);
 	if ((err = cli_sock.put()) < 0)
@@ -37,50 +36,51 @@ int main(int argc, char** argv)
 		//listen
 		if ((err = cli_sock.get()) < 0)
 			die("get()");
-		std::cout << "packet get!" << std::endl;
 		get_pack = cli_sock.get_recv_pack();
+		std::cout << "g:" << get_pack.get_opcode() << std::endl;
 
 		//identify and respond
 		switch (get_pack.get_opcode())
 		{
 			case 0: //invalid operation
 			{
-				put_pack.set_opcode(5); //error op
-				put_pack.set_errno(4);
-				put_pack.set_errmsg("illegal tftp opcode");
+				put_pack.mk_ERROR(4, "illegal tftp opcode");
 				cli_sock.set_send_pack(put_pack);
 				break;
 			}
 			case 1: //rrq and wrq invalid on client
 			case 2:
 			{
-				put_pack.set_opcode(5); //error op
-				put_pack.set_errno(4);
-				put_pack.set_errmsg("illegal tftp client opcode");
+				put_pack.mk_ERROR(4, "illegal tftp client opcode");
 				cli_sock.set_send_pack(put_pack);
 				break;
 			}
 			case 3: //data
 			{
 				//open file and write
-				//send ack
-				w_file.open("out-client/smallertest.txt", std::ios::out);
-				if (sizeof(get_pack.get_data()) == 512) //full data, so more to come (probably...)
+				int dat_len = strlen(get_pack.get_data());
+				if (dat_len > 511) //full data, so more to come (514 bytes WHY)
 				{
 					//DEAL WITH BIG FILE
-					put_pack.set_opcode(6);
-					put_pack.set_errno(666);
-					put_pack.set_errmsg("file too FUCKIN big");
-					cli_sock.set_send_pack(put_pack);
+					w_file.write(get_pack.get_data(), dat_len);
+					//ack
+					//std::cout << get_pack.get_data();
+					put_pack.mk_ACK(get_pack.get_blkno());
+				}
+				else if (dat_len == 0)
+				{
+					//data done, ack and terminate
+					w_file.close();
+					put_pack.mk_ACK(get_pack.get_blkno());
 				}
 				else
 				{
 					//write last bit of data
-					w_file.write(get_pack.get_data(), sizeof(get_pack.get_data()));
+					w_file.write(get_pack.get_data(), dat_len);
 					w_file.close();
-					put_pack.set_opcode(4);
-					put_pack.set_blkno(1);
+					put_pack.mk_ACK(get_pack.get_blkno());
 				}
+				cli_sock.set_send_pack(put_pack);
 				break;
 			}
 			case 4: //ack
@@ -92,9 +92,13 @@ int main(int argc, char** argv)
 			{
 				//show error and terminate
 				std::cout << get_pack.get_errno() << get_pack.get_errmsg() << std::endl;
+				return 1;
 				break;
 			}
 		}
+		if ((err = cli_sock.put()) < 0)
+			die("put()");
+		std::cout << "s:" << put_pack.get_opcode() << std::endl;
 	}
 	
 	return 0;

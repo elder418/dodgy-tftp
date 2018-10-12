@@ -74,6 +74,7 @@ int sock::get() //get remote packet, decode into memory
 	if (recv_len < 0)
 		return errno;
 	recv_pack.decode(recv_buf);
+	return 0;
 }
 
 int sock::put() //encode packet, send to remote
