@@ -74,65 +74,6 @@ int main(int argc, char** argv)
 						put_pack.mk_DATA(1, r_mem);
 						srv_sock.set_send_pack(put_pack);
 						cur_blk = 1;
-						//big block do split
-						//r_mem = new char[512];
-						//if (r_size % 512 == 0)
-						//{
-							//evenly divisible into 512 block chunks
-						//	int pack_count = r_size / 512;
-						//	int file_offset = 0;
-						//	for (int i = 0; i < pack_count; i++)
-						//	{
-						//		r_file.seekg(file_offset, std::ios::beg);
-						//		r_file.read(r_mem, 512);
-						//		file_offset += 512;
-						//		//create data packet
-						//		put_pack.mk_DATA(i+1, r_mem);
-						//		srv_sock.set_send_pack(put_pack);
-						//		if ((err = srv_sock.put()) < 0)
-						//		{
-						//			std::cout << "fatal: put(): " << errno << std::endl;
-						//			return 1;
-						//		}
-
-						//		std::cout << "packet sent (" << put_pack.get_blkno() << ")" << std::endl;
-						//	}
-						//}
-						//else 
-						//{
-						//	//discard remainder
-						//	int pack_count = (r_size / 512) + 1;
-						//	int tail_size = r_size % 512;
-						//	int file_offset = 0;
-						//	for (int i = 1; i < pack_count; i++)
-						//	{
-						//		r_file.seekg(file_offset, std::ios::beg);
-						//		r_file.read(r_mem, 512);
-						//		file_offset += 512;
-						//		//create data packet
-						//		put_pack.mk_DATA(i, r_mem);
-						//		srv_sock.set_send_pack(put_pack);
-						//		if ((err = srv_sock.put()) < 0)
-						//		{
-						//			std::cout << "fatal: put(): " << errno << std::endl;
-						//			return 1;
-						//		}
-//
-//								std::cout << "packet sent (" << put_pack.get_blkno() << ")" << std::endl;
-//							}
-//							r_file.seekg(file_offset, std::ios::beg);
-//							r_file.read(r_mem, tail_size);
-							//create data packet
-//							put_pack.mk_DATA(put_pack.get_blkno()+1, r_mem);
-//							srv_sock.set_send_pack(put_pack);
-//							if ((err = srv_sock.put()) < 0)
-//							{
-//								std::cout << "fatal: put(): " << errno << std::endl;
-//								return 1;
-//							}
-//
-//							std::cout << "packet sent (" << put_pack.get_blkno() << ")" << std::endl;
-//						}
 					}
 					else
 					{
@@ -197,6 +138,7 @@ int main(int argc, char** argv)
 			{
 				//recv error, cout cleanup and close?
 				std::cout << get_pack.get_errno() << get_pack.get_errmsg() << std::endl;
+				return 1;
 				break;
 			}
 		}

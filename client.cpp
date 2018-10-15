@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -18,14 +19,17 @@ int die(const char* err)
 int main(int argc, char** argv)
 {
 	int err;
-	std::ofstream w_file;
+	//std::ofstream w_file;
+	FILE* w_file;
+	char* holder = new char[5120];
+	int cur_blk = 0;
 
 	sock cli_sock("192.168.1.69");
 
 	pack rrq0, get_pack, put_pack;
 	rrq0.mk_RRQ("smalltest.txt", "octet");
 
-	w_file.open("out-client/smalltest.txt", std::ios::out | std::ios::app);
+	//w_file.open("out-client/smalltest.txt", std::ios::out | std::ios::app);
 	//send file request
 	cli_sock.set_send_pack(rrq0);
 	if ((err = cli_sock.put()) < 0)
@@ -33,6 +37,7 @@ int main(int argc, char** argv)
 
 	while (1)
 	{
+		w_file = fopen("out-client/smalltest.txt", "a");
 		//listen
 		if ((err = cli_sock.get()) < 0)
 			die("get()");
@@ -59,10 +64,13 @@ int main(int argc, char** argv)
 			{
 				//open file and write
 				int dat_len = strlen(get_pack.get_data());
+				cur_blk = get_pack.get_blkno();
 				if (dat_len > 511) //full data, so more to come (514 bytes WHY)
 				{
 					//DEAL WITH BIG FILE
-					w_file.write(get_pack.get_data(), dat_len);
+					//w_file.write(get_pack.get_data(), dat_len);
+					strcat(holder, get_pack.get_data());
+					fputs(get_pack.get_data(), w_file);
 					//ack
 					//std::cout << get_pack.get_data();
 					put_pack.mk_ACK(get_pack.get_blkno());
@@ -70,14 +78,17 @@ int main(int argc, char** argv)
 				else if (dat_len == 0)
 				{
 					//data done, ack and terminate
-					w_file.close();
+					//w_file.close();
+					fclose(w_file);
 					put_pack.mk_ACK(get_pack.get_blkno());
 				}
 				else
 				{
 					//write last bit of data
-					w_file.write(get_pack.get_data(), dat_len);
-					w_file.close();
+					//w_file.write(get_pack.get_data(), dat_len);
+					//w_file.close();
+					fputs(get_pack.get_data(), w_file);
+					fclose(w_file);
 					put_pack.mk_ACK(get_pack.get_blkno());
 				}
 				cli_sock.set_send_pack(put_pack);
@@ -99,6 +110,8 @@ int main(int argc, char** argv)
 		if ((err = cli_sock.put()) < 0)
 			die("put()");
 		std::cout << "s:" << put_pack.get_opcode() << std::endl;
+		std::cout << holder;
+		fclose(w_file);
 	}
 	
 	return 0;
