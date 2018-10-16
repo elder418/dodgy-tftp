@@ -29,15 +29,11 @@ void pack::zero()
 {
 	opcode = 0;
 	filename = new char[24];
-	memset(&filename, 0, 24);
 	mode = new char[8];
-	memset(&mode, 0, 8);
 	data = new char[512];
-	memset(&data, 0, 512);
 	blkno = 0;
 	errno = 0;
 	errmsg = new char[64];
-	memset(&errmsg, 0, 64);
 }
 
 char* pack::encode()
@@ -66,7 +62,7 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x <= 516)
+			while (x < 516)
 			{
 				ret[x] = 0;
 				x++;
@@ -92,7 +88,7 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x <= 516)
+			while (x < 516)
 			{
 				ret[x] = 0;
 				x++;
@@ -113,7 +109,7 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x <= 516)
+			while (x < 516)
 			{
 				ret[x] = 0;
 				x++;
@@ -129,7 +125,7 @@ char* pack::encode()
 			ret[3] = blkno & 0x00ff;
 			int x = 4;
 			//fill rest of memory with 0
-			while (x <= 516)
+			while (x < 516)
 			{
 				ret[x] = 0;
 				x++;
@@ -150,7 +146,7 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x <= 516)
+			while (x < 516)
 			{
 				ret[x] = 0;
 				x++;
@@ -166,6 +162,7 @@ char* pack::encode()
 void pack::decode(char* recv)
 {
 	int x = 0;
+	this->zero();
 	opcode = recv[0] | recv[1];
 	switch (opcode)
 	{
@@ -212,7 +209,7 @@ void pack::decode(char* recv)
 		{
 			blkno = recv[2] | recv[3];
 			x = 4;
-			while (recv[x] != 0)
+			while (recv[x] != 0 && x < 516)
 			{
 				data[x-4] = recv[x];
 				x++;

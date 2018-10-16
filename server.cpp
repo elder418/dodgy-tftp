@@ -1,5 +1,5 @@
 #include <iostream>
-#include <fstream>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -9,9 +9,16 @@
 #include "pack.h"
 #include "sock.h"
 
+int print_hex(char* buf)
+{
+	for (int i = 0; i < strlen(buf); i++)
+		printf("%x", buf[i]);
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
-	std::ifstream r_file;
+	FILE* r_file;
 	pack get_pack, put_pack;
 	//open ipv4 udp socket
 	int err;
@@ -51,13 +58,15 @@ int main(int argc, char** argv)
 			{
 				//read request, check for file, open and put in packet
 				//send first data
-				if (strcmp(get_pack.get_filename(), "smalltest.txt") == 0) //see if reqd 'file' exists
+				if (strcmp(get_pack.get_filename(), "testo.bmp") == 0) //see if reqd 'file' exists
 				{
 					std::streampos r_size;
 					char* r_mem;
 					//open file with ptr at end
-					r_file.open(get_pack.get_filename(), std::ios::in | std::ios::ate);
-					r_size = r_file.tellg(); //get file size
+					r_file = fopen(get_pack.get_filename(), "rb");
+					fseek(r_file, 0, SEEK_END);
+					r_size = ftell(r_file);
+					rewind(r_file);
 					if (r_size > 512)
 					{
 						pack_count = r_size / 512;
@@ -68,21 +77,22 @@ int main(int argc, char** argv)
 						
 						//send first 512 chuck
 						r_mem = new char[512];
-						r_file.seekg(0, std::ios::beg);
-						r_file.read(r_mem, 512);
+						fread(r_mem, 1, 512, r_file);
 						//file offset + 512;
 						put_pack.mk_DATA(1, r_mem);
+						print_hex(put_pack.get_data());
+						std::cout << std::endl << strlen(put_pack.get_data()) << std::endl;
 						srv_sock.set_send_pack(put_pack);
 						cur_blk = 1;
 					}
 					else
 					{
 						r_mem = new char[r_size];
-						r_file.seekg(0, std::ios::beg);
-						r_file.read(r_mem, r_size);
-						r_file.close();
+						fread(r_mem, 1, r_size, r_file);
 						//create data packet
 						put_pack.mk_DATA(1, r_mem);
+						print_hex(put_pack.get_data());
+						std::cout << std::endl <<  strlen(put_pack.get_data()) << std::endl;
 						srv_sock.set_send_pack(put_pack);
 						cur_blk = 1;
 					}
@@ -115,10 +125,11 @@ int main(int argc, char** argv)
 				{
 					cur_blk++;
 					char* r_mem = new char[512];
-					int file_offset = cur_blk * 512;
-					r_file.seekg(file_offset, std::ios::beg);
-					r_file.read(r_mem, 512);
+					//int file_offset = cur_blk * 512;
+					fread(r_mem, 1, 512, r_file);
 					put_pack.mk_DATA(cur_blk, r_mem);
+					print_hex(put_pack.get_data());
+					std::cout << std::endl << strlen(put_pack.get_data()) << std::endl;
 					srv_sock.set_send_pack(put_pack);
 				}
 				else if (get_pack.get_blkno() == pack_count)

@@ -18,6 +18,7 @@ class sock
 		int set_recv_pack(pack rpak);
 		pack get_send_pack();
 		pack get_recv_pack();
+		char* get_recv_buf();
 
 		int sock_bind();
 

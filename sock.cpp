@@ -57,6 +57,10 @@ pack sock::get_recv_pack()
 {
 	return recv_pack;
 }
+char* sock::get_recv_buf()
+{
+	return recv_buf;
+}
 
 int sock::sock_bind()
 {
@@ -71,10 +75,8 @@ int sock::get() //get remote packet, decode into memory
 {
 	memset(&recv_buf, 0, sizeof(recv_buf));
 	recv_len = recvfrom(sockfd, recv_buf, buf_len, 0, (struct sockaddr*)&cli_addr, &cli_size);
-	if (recv_len < 0)
-		return errno;
 	recv_pack.decode(recv_buf);
-	return 0;
+	return recv_len;
 }
 
 int sock::put() //encode packet, send to remote
