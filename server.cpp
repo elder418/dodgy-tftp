@@ -11,7 +11,7 @@
 
 int print_hex(char* buf)
 {
-	for (int i = 0; i < strlen(buf); i++)
+	for (int i = 0; i < 512; i++)
 		printf("%x", buf[i]);
 	return 0;
 }
@@ -19,7 +19,8 @@ int print_hex(char* buf)
 int main(int argc, char** argv)
 {
 	FILE* r_file;
-	pack get_pack, put_pack;
+	pack* get_pack = new pack();
+	pack* put_pack = new pack();
 	//open ipv4 udp socket
 	int err;
 	int pack_count = 0;
@@ -44,13 +45,13 @@ int main(int argc, char** argv)
 
 
 		get_pack = srv_sock.get_recv_pack(); //copy socket packet member into memory
-		std::cout << "g:" << get_pack.get_opcode() << std::endl;
+		std::cout << "g:" << get_pack->get_opcode() << std::endl;
 		//identify packet by opcode and deal w/
-		switch (get_pack.get_opcode())
+		switch (get_pack->get_opcode())
 		{
 			case 0: //invalid operation
 			{
-				put_pack.mk_ERROR(4, "illegal tftp opcode");
+				put_pack->mk_ERROR(4, "illegal tftp opcode");
 				srv_sock.set_send_pack(put_pack);
 				break;
 			}
@@ -58,12 +59,12 @@ int main(int argc, char** argv)
 			{
 				//read request, check for file, open and put in packet
 				//send first data
-				if (strcmp(get_pack.get_filename(), "testo.bmp") == 0) //see if reqd 'file' exists
+				if (strcmp(get_pack->get_filename(), "israel.ovpn") == 0) //see if reqd 'file' exists
 				{
 					std::streampos r_size;
 					char* r_mem;
 					//open file with ptr at end
-					r_file = fopen(get_pack.get_filename(), "rb");
+					r_file = fopen(get_pack->get_filename(), "rb");
 					fseek(r_file, 0, SEEK_END);
 					r_size = ftell(r_file);
 					rewind(r_file);
@@ -79,9 +80,9 @@ int main(int argc, char** argv)
 						r_mem = new char[512];
 						fread(r_mem, 1, 512, r_file);
 						//file offset + 512;
-						put_pack.mk_DATA(1, r_mem);
-						print_hex(put_pack.get_data());
-						std::cout << std::endl << strlen(put_pack.get_data()) << std::endl;
+						put_pack->mk_DATA(1, r_mem);
+						print_hex(put_pack->get_data());
+						std::cout << std::endl << strlen(put_pack->get_data()) << std::endl;
 						srv_sock.set_send_pack(put_pack);
 						cur_blk = 1;
 					}
@@ -90,16 +91,16 @@ int main(int argc, char** argv)
 						r_mem = new char[r_size];
 						fread(r_mem, 1, r_size, r_file);
 						//create data packet
-						put_pack.mk_DATA(1, r_mem);
-						print_hex(put_pack.get_data());
-						std::cout << std::endl <<  strlen(put_pack.get_data()) << std::endl;
+						put_pack->mk_DATA(1, r_mem);
+						print_hex(put_pack->get_data());
+						std::cout << std::endl <<  strlen(put_pack->get_data()) << std::endl;
 						srv_sock.set_send_pack(put_pack);
 						cur_blk = 1;
 					}
 				}
 				else //error packet, file not found.
 				{
-					put_pack.mk_ERROR(1, "file not found");
+					put_pack->mk_ERROR(1, "file not found");
 					srv_sock.set_send_pack(put_pack);
 				}
 				break;
@@ -121,18 +122,18 @@ int main(int argc, char** argv)
 				//ack, block number being acknowledged, 0 for wrq special case
 				//send next data block?
 				//check if blocks are synced
-				if (get_pack.get_blkno() == cur_blk && cur_blk < pack_count)
+				if (get_pack->get_blkno() == cur_blk && cur_blk < pack_count)
 				{
 					cur_blk++;
 					char* r_mem = new char[512];
 					//int file_offset = cur_blk * 512;
 					fread(r_mem, 1, 512, r_file);
-					put_pack.mk_DATA(cur_blk, r_mem);
-					print_hex(put_pack.get_data());
-					std::cout << std::endl << strlen(put_pack.get_data()) << std::endl;
+					put_pack->mk_DATA(cur_blk, r_mem);
+					print_hex(put_pack->get_data());
+					std::cout << std::endl << strlen(put_pack->get_data()) << std::endl;
 					srv_sock.set_send_pack(put_pack);
 				}
-				else if (get_pack.get_blkno() == pack_count)
+				else if (get_pack->get_blkno() == pack_count)
 				{
 					//last data acknowledged, done
 					return 1;
@@ -140,7 +141,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					put_pack.mk_ERROR(5, "unknown transfer id (blocks desynced?)");
+					put_pack->mk_ERROR(5, "unknown transfer id (blocks desynced?)");
 					srv_sock.set_send_pack(put_pack);
 				}
 				break;
@@ -148,7 +149,7 @@ int main(int argc, char** argv)
 			case 5: //ERROR
 			{
 				//recv error, cout cleanup and close?
-				std::cout << get_pack.get_errno() << get_pack.get_errmsg() << std::endl;
+				std::cout << get_pack->get_errno() << get_pack->get_errmsg() << std::endl;
 				return 1;
 				break;
 			}
@@ -158,7 +159,7 @@ int main(int argc, char** argv)
 			std::cout << "fatal: put(): " << errno << std::endl;
 			return 1;
 		}
-		std::cout << "s:" << put_pack.get_opcode() << std::endl;
+		std::cout << "s:" << put_pack->get_opcode() << std::endl;
 	}
 	std::cout << "Jef\n";
 	return 0;

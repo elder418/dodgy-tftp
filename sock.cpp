@@ -15,6 +15,8 @@ sock::sock()
 	cli_addr.sin_family = AF_INET;
 	cli_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	cli_addr.sin_port = htons(port);
+	send_pack = new pack();
+	recv_pack = new pack();
 }
 sock::sock(const char* ip)
 {
@@ -31,29 +33,41 @@ sock::sock(const char* ip)
 	cli_addr.sin_family = AF_INET;
 	cli_addr.sin_addr.s_addr = inet_addr(ip);
 	cli_addr.sin_port = htons(port);
+	send_pack = new pack();
+	recv_pack = new pack();
 }
 
 sock::~sock()
 {
+	port = 0;
+	sockfd = 0;
+	recv_len = 0;
+	memset(&srv_addr, 0, sizeof(srv_addr));
+	memset(&cli_addr, 0, sizeof(cli_addr));
+	cli_size = 0;
 	delete send_buf;
-	// clean up u lazy bitch
+	send_buf = NULL;
+	delete send_pack;
+	send_pack = NULL;
+	delete recv_pack;
+	recv_pack = NULL;
 }
 
-int sock::set_send_pack(pack spak)
+int sock::set_send_pack(pack* spak)
 {
 	send_pack = spak;
 	return 0;
 }
-int sock::set_recv_pack(pack rpak)
+int sock::set_recv_pack(pack* rpak)
 {
 	recv_pack = rpak;
 	return 0;
 }
-pack sock::get_send_pack()
+pack* sock::get_send_pack()
 {
 	return send_pack;
 }
-pack sock::get_recv_pack()
+pack* sock::get_recv_pack()
 {
 	return recv_pack;
 }
@@ -72,17 +86,21 @@ int sock::sock_bind()
 }
 
 int sock::get() //get remote packet, decode into memory
-{
+{		
 	memset(&recv_buf, 0, sizeof(recv_buf));
 	recv_len = recvfrom(sockfd, recv_buf, buf_len, 0, (struct sockaddr*)&cli_addr, &cli_size);
-	recv_pack.decode(recv_buf);
+	delete recv_pack;
+	recv_pack = NULL;
+	recv_pack = new pack();
+	if (recv_pack->decode(recv_buf) < 0)
+		return -1;
 	return recv_len;
 }
 
 int sock::put() //encode packet, send to remote
 {
 	memset(&send_buf, 0, sizeof(send_buf));
-	send_buf = send_pack.encode();
+	send_buf = send_pack->encode();
 	if (sendto(sockfd, send_buf, buf_len, 0, (struct sockaddr*)&cli_addr, cli_size) < 0)
 		return errno;
 	return 0;

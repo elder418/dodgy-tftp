@@ -11,7 +11,18 @@ pack::pack()
 	errmsg = new char[64];
 }
 pack::~pack()
-{	
+{
+	opcode = 0;
+	delete filename;
+	filename = NULL;
+	delete mode;
+	mode = NULL;
+	delete data;
+	data = NULL;
+	blkno = 0;
+	errno = 0;
+	delete errmsg;
+	errmsg = NULL;	
 //	opcode = 0;
 //	if (filename != NULL)
 //		delete filename;
@@ -62,11 +73,11 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x < 516)
-			{
-				ret[x] = 0;
-				x++;
-			}
+//			while (x < 516)
+//			{
+//				ret[x] = 0;
+//				x++;
+//			}
 			return ret;
 			break;
 		}
@@ -88,11 +99,11 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x < 516)
-			{
-				ret[x] = 0;
-				x++;
-			}
+//			while (x < 516)
+//			{
+//				ret[x] = 0;
+//				x++;
+//			}
 			return ret;
 			break;
 		}
@@ -103,17 +114,12 @@ char* pack::encode()
 			ret[2] = blkno & 0xff00;
 			ret[3] = blkno & 0x00ff;
 			int x = 4;
-			for (char* i = data; *i; i++)
+			while (x < 516)
 			{
-				ret[x] = *i;
+				ret[x] = data[x-4];
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x < 516)
-			{
-				ret[x] = 0;
-				x++;
-			}
 			return ret;
 			break;
 		}
@@ -125,11 +131,11 @@ char* pack::encode()
 			ret[3] = blkno & 0x00ff;
 			int x = 4;
 			//fill rest of memory with 0
-			while (x < 516)
-			{
-				ret[x] = 0;
-				x++;
-			}
+//			while (x < 516)
+//			{
+//				ret[x] = 0;
+//				x++;
+//			}
 			return ret;
 			break;
 		}
@@ -146,11 +152,11 @@ char* pack::encode()
 				x++;
 			}
 			//fill rest of memory with 0
-			while (x < 516)
-			{
-				ret[x] = 0;
-				x++;
-			}
+//			while (x < 516)
+//			{
+//				ret[x] = 0;
+//				x++;
+//			}
 			return ret;
 			break;
 		}
@@ -159,79 +165,87 @@ char* pack::encode()
 			break;
 	}
 }
-void pack::decode(char* recv)
+int pack::decode(char* recv)
 {
 	int x = 0;
-	this->zero();
-	opcode = recv[0] | recv[1];
-	switch (opcode)
+	if (recv != NULL)
 	{
-		case 0:
-			break;
-		case 1: //RRQ
+		//this->zero();
+//		int tester = 0;
+//		tester = recv[0] | recv[1];
+		opcode = recv[0] | recv[1];
+		switch (opcode)
 		{
-			int i = 0;
-			char* fn;
-			x = 2;
-			while (recv[x] != 0)
+			case 0:
+				break;
+			case 1: //RRQ
 			{
-				filename[x-2] = recv[x];
-				x++;
+				int i = 0;
+				char* fn;
+				x = 2;
+				while (recv[x] != 0)
+					{
+					filename[x-2] = recv[x];
+					x++;
+				}
+				x++; //skip null terminator
+				while (recv[x] != 0)
+				{
+					mode[i] = recv[x];
+					x++;
+					i++;
+				}
+				break;
 			}
-			x++; //skip null terminator
-			while (recv[x] != 0)
+			case 2: //WRQ
 			{
-				mode[i] = recv[x];
-				x++;
-				i++;
+				int i = 0;
+				x = 2;
+				while (recv[x] != 0)
+				{
+					filename[x-2] = recv[x];
+					x++;
+				}
+				x++; //skip null terminator
+				while (recv[x] != 0)
+				{
+					mode[i] = recv[x];
+					x++;
+					i++;
+				}
+				break;
 			}
-			break;
-		}
-		case 2: //WRQ
-		{
-			int i = 0;
-			x = 2;
-			while (recv[x] != 0)
+			case 3: //DATA
 			{
-				filename[x-2] = recv[x];
-				x++;
+				blkno = recv[2] | recv[3];
+				x = 4;
+				while (x < 516)
+				{
+					data[x-4] = recv[x];
+					x++;
+				}
+				break;
 			}
-			x++; //skip null terminator
-			while (recv[x] != 0)
+			case 4: //ACK
 			{
-				mode[i] = recv[x];
-				x++;
-				i++;
+				blkno = recv[2] | recv[3];
+				break;
 			}
-			break;
-		}
-		case 3: //DATA
-		{
-			blkno = recv[2] | recv[3];
-			x = 4;
-			while (recv[x] != 0 && x < 516)
+			case 5: //ERROR
 			{
-				data[x-4] = recv[x];
-				x++;
-			}
-			break;
-		}
-		case 4: //ACK
-		{
-			blkno = recv[2] | recv[3];
-			break;
-		}
-		case 5: //ERROR
-		{
-			errno = recv[2] | recv[3];
-			x = 4;
-			while (recv[x] != 0)
-			{
-				errmsg[x-4] = recv[x];
-				x++;
+				errno = recv[2] | recv[3];
+				x = 4;
+				while (recv[x] != 0)
+				{
+					errmsg[x-4] = recv[x];
+					x++;
+				}
 			}
 		}
 	}
+	else
+		return 1;
+	//null char*
 }
 
 int16_t pack::get_opcode()
@@ -285,13 +299,11 @@ int pack::set_mode(char* md)
 }
 int pack::set_data(char* dat)
 {
-	if (sizeof(dat) <= 512)
+	for (int i = 0; i < 512; i++)
 	{
-		data = dat;
-		return 0;
+		data[i] = dat[i];
 	}
-	else //make new data packet here??
-		return 1;
+	return 0;
 }
 int pack::set_blkno(int16_t bn)
 {
@@ -327,7 +339,10 @@ void pack::mk_DATA(int16_t blk, char* dat)
 {
 	this->set_opcode(3);
 	this->set_blkno(blk);
-	this->set_data(dat);
+	for (int i = 0; i < 512; i++)
+	{
+		data[i] = dat[i];
+	}
 }
 
 void pack::mk_ACK(int16_t blk)

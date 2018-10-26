@@ -11,7 +11,7 @@ class pack
 		void zero();
 
 		char* encode();
-		void decode(char*);
+		int decode(char*);
 
 		int16_t get_opcode();
 		char* get_filename();

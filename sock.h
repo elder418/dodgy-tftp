@@ -14,10 +14,10 @@ class sock
 		sock(const char* ip);
 		~sock();
 
-		int set_send_pack(pack spak);
-		int set_recv_pack(pack rpak);
-		pack get_send_pack();
-		pack get_recv_pack();
+		int set_send_pack(pack* spak);
+		int set_recv_pack(pack* rpak);
+		pack* get_send_pack();
+		pack* get_recv_pack();
 		char* get_recv_buf();
 
 		int sock_bind();
@@ -54,8 +54,8 @@ class sock
 		unsigned int cli_size;
 		char* send_buf;
 		char recv_buf[516];
-		pack send_pack;
-		pack recv_pack;
+		pack* send_pack;
+		pack* recv_pack;
 //		int16_t opcode;
 //		char* filename;
 //		char* mode;
